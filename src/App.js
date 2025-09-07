@@ -17,12 +17,28 @@ function App() {
   const [originalStream, setOriginalStream] = React.useState(null);
   const [recordedBlob, setRecordedBlob] = React.useState(null);
   const [showOverlayEditor, setShowOverlayEditor] = React.useState(false);
+  const [aspectRatio, setAspectRatio] = React.useState('16:9');
   
-  const videoJsOptions = {
+  const getAspectRatioDimensions = (ratio) => {
+    switch (ratio) {
+      case '16:9':
+        return { width: 320, height: 180 };
+      case '1:1':
+        return { width: 320, height: 320 };
+      case '9:16':
+        return { width: 180, height: 320 };
+      default:
+        return { width: 320, height: 180 };
+    }
+  };
+
+  const dimensions = React.useMemo(() => getAspectRatioDimensions(aspectRatio), [aspectRatio]);
+  
+  const videoJsOptions = React.useMemo(() => ({
     controls: true,
     bigPlayButton: true,
-    width: 320,
-    height: 240,
+    width: dimensions.width,
+    height: dimensions.height,
     fluid: false,
     plugins: {
       /*
@@ -52,14 +68,17 @@ function App() {
       */
       record: {
         audio: true,
-        video: true,
+        video: {
+          width: dimensions.width,
+          height: dimensions.height
+        },
         pip: true,
         screen: true,
         maxLength: 120,
         debug: true
       }
     }
-  };
+  }), [dimensions]);
 
   const toggleMirrorMode = () => {
     if (playerRef.current) {
@@ -81,10 +100,19 @@ function App() {
     
     if (playerRef.current && playerRef.current.record && deviceId) {
       try {
+        // Validate device exists before setting
+        const deviceExists = videoDevices.find(device => device.deviceId === deviceId);
+        if (!deviceExists) {
+          console.error('Video device not found:', deviceId);
+          alert('Selected video device is no longer available. Please refresh and try again.');
+          return;
+        }
+        
         playerRef.current.record().setVideoInput(deviceId);
         console.log('Changed video input to device:', deviceId);
       } catch (error) {
-        console.warn('Error changing video input:', error);
+        console.error('Error changing video input:', error);
+        alert('Failed to change video input device. Please check if the device is available and try again.');
       }
     }
   };
@@ -95,11 +123,39 @@ function App() {
     
     if (playerRef.current && playerRef.current.record && deviceId) {
       try {
+        // Validate device exists before setting
+        const deviceExists = audioDevices.find(device => device.deviceId === deviceId);
+        if (!deviceExists) {
+          console.error('Audio device not found:', deviceId);
+          alert('Selected audio device is no longer available. Please refresh and try again.');
+          return;
+        }
+        
         playerRef.current.record().setAudioInput(deviceId);
         console.log('Changed audio input to device:', deviceId);
       } catch (error) {
-        console.warn('Error changing audio input:', error);
+        console.error('Error changing audio input:', error);
+        alert('Failed to change audio input device. Please check if the device is available and try again.');
       }
+    }
+  };
+
+  const refreshDevices = () => {
+    if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+      navigator.mediaDevices.enumerateDevices()
+        .then(devices => {
+          const videoInputDevices = devices.filter(device => device.kind === 'videoinput');
+          const audioInputDevices = devices.filter(device => device.kind === 'audioinput');
+          
+          setVideoDevices(videoInputDevices);
+          setAudioDevices(audioInputDevices);
+          
+          console.log('Devices refreshed - Video:', videoInputDevices.length, 'Audio:', audioInputDevices.length);
+        })
+        .catch(err => {
+          console.error('Error refreshing devices:', err);
+          alert('Failed to refresh device list. Please reload the page.');
+        });
     }
   };
 
@@ -267,7 +323,19 @@ function App() {
     });
 
     player.on('deviceError', () => {
-      console.error('device error:', player.deviceErrorCode);
+      const errorCode = player.deviceErrorCode;
+      console.error('device error:', errorCode);
+      
+      let errorMessage = 'Device error occurred';
+      if (errorCode && errorCode.name === 'NotFoundError') {
+        errorMessage = 'Camera or microphone not found. Please check your devices and refresh the page.';
+      } else if (errorCode && errorCode.name === 'NotAllowedError') {
+        errorMessage = 'Camera or microphone access denied. Please allow permissions and refresh.';
+      } else if (errorCode && errorCode.name === 'NotReadableError') {
+        errorMessage = 'Device is being used by another application. Please close other apps using your camera/microphone.';
+      }
+      
+      alert(errorMessage);
     });
   };
 
@@ -313,6 +381,19 @@ function App() {
             )}
           </select>
         </div>
+
+        <div className="flex items-center gap-3">
+          <label className="text-gray-700 font-medium">Aspect Ratio:</label>
+          <select
+            value={aspectRatio}
+            onChange={(e) => setAspectRatio(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="16:9">16:9 (Landscape)</option>
+            <option value="1:1">1:1 (Square)</option>
+            <option value="9:16">9:16 (Portrait/Mobile)</option>
+          </select>
+        </div>
         
         <div className="flex items-center gap-3">
           <span className="text-gray-700">Mirror Mode:</span>
@@ -333,7 +414,7 @@ function App() {
           </label>
         </div>
       </div>
-      <VideoJSComponent options={videoJsOptions} onReady={handlePlayerReady} />
+      <VideoJSComponent key={aspectRatio} options={videoJsOptions} onReady={handlePlayerReady} />
       {isRecording && (
         <div className="mt-4 flex gap-3">
           <button
@@ -355,6 +436,7 @@ function App() {
         <VideoOverlay
           videoBlob={recordedBlob}
           onClose={handleCloseOverlayEditor}
+          aspectRatio={aspectRatio}
         />
       )}
     </div>
