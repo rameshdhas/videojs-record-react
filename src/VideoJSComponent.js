@@ -49,8 +49,22 @@ export const VideoJSComponent = (props) => {
     // You could update an existing player in the `else` block here
     // on prop change
     } else {
-      // const player = playerRef.current;
-      // player.record().getDevice();
+      // For aspect ratio changes, we need to recreate the player
+      const player = playerRef.current;
+      if (player && !player.isDisposed()) {
+        player.dispose();
+        playerRef.current = null;
+      }
+      
+      // Recreate with new options
+      const videoElement = document.createElement('video-js');
+      videoElement.className = 'video-js vjs-default-skin';
+      videoRef.current.innerHTML = '';
+      videoRef.current.appendChild(videoElement);
+
+      const newPlayer = playerRef.current = videojs(videoElement, options, () => {
+        onReady && onReady(newPlayer);
+      });
     }
   }, [options, videoRef]);
 
