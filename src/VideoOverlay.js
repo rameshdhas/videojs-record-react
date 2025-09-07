@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 import '../node_modules/videojs-overlay/dist/videojs-overlay.css';
@@ -7,7 +7,7 @@ import { DndContext, useDraggable } from '@dnd-kit/core';
 import { restrictToParentElement } from '@dnd-kit/modifiers';
 import { CSS } from '@dnd-kit/utilities';
 
-const VideoOverlay = ({ videoBlob, onClose }) => {
+const VideoOverlay = ({ videoBlob, onClose, aspectRatio = '16:9' }) => {
   const videoRef = useRef(null);
   const playerRef = useRef(null);
   const [videoUrl, setVideoUrl] = useState(null);
@@ -21,6 +21,22 @@ const VideoOverlay = ({ videoBlob, onClose }) => {
     end: 5,
     align: 'top-left'
   });
+
+  const getAspectRatioDimensions = (ratio) => {
+    const baseSize = 320;
+    switch (ratio) {
+      case '16:9':
+        return { width: baseSize * 2, height: (baseSize * 2) * (9/16) };
+      case '1:1':
+        return { width: baseSize * 2, height: baseSize * 2 };
+      case '9:16':
+        return { width: (baseSize * 2) * (9/16), height: baseSize * 2 };
+      default:
+        return { width: baseSize * 2, height: (baseSize * 2) * (9/16) };
+    }
+  };
+
+  const dimensions = useMemo(() => getAspectRatioDimensions(aspectRatio), [aspectRatio]);
 
   useEffect(() => {
     if (videoBlob) {
@@ -40,8 +56,8 @@ const VideoOverlay = ({ videoBlob, onClose }) => {
         controls: true,
         responsive: true,
         fluid: false,
-        width: 640,
-        height: 360,
+        width: dimensions.width,
+        height: dimensions.height,
         sources: [{
           src: videoUrl,
           type: videoBlob.type || 'video/webm'
@@ -64,7 +80,7 @@ const VideoOverlay = ({ videoBlob, onClose }) => {
         });
       });
     }
-  }, [videoUrl, videoBlob]);
+  }, [videoUrl, videoBlob, dimensions]);
 
   useEffect(() => {
     const player = playerRef.current;
