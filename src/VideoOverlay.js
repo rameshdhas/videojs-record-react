@@ -231,6 +231,12 @@ const VideoOverlay = ({ videoBlob, onClose }) => {
       window.open('https://videojs.com', '_blank', 'noopener,noreferrer');
     };
 
+    const handleButtonClick = (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      alert('Overlay button clicked!');
+    };
+
     return (
       <div ref={setNodeRef} style={style}>
         <style>
@@ -251,12 +257,29 @@ const VideoOverlay = ({ videoBlob, onClose }) => {
             color: '#60a5fa', 
             textDecoration: 'underline',
             cursor: 'pointer',
-            pointerEvents: 'auto'
+            pointerEvents: 'auto',
+            marginRight: '10px'
           }}
           onClick={handleLinkClick}
         >
           Visit VideoJS
         </a>
+        <button
+          onClick={handleButtonClick}
+          style={{
+            backgroundColor: '#3b82f6',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            padding: '6px 12px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: 'bold',
+            pointerEvents: 'auto'
+          }}
+        >
+          Action
+        </button>
       </div>
     );
   };
