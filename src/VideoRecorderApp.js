@@ -225,10 +225,46 @@ function VideoRecorderApp() {
       video.style.transform = 'scaleX(-1)';
     }
 
+    // Force controls to be visible immediately
+    player.controls(true);
+    player.ready(() => {
+      player.controls(true);
+      // Force control bar to be visible
+      const controlBar = player.controlBar;
+      if (controlBar) {
+        controlBar.show();
+        // Also force the element styles directly
+        const controlBarEl = controlBar.el();
+        if (controlBarEl) {
+          controlBarEl.style.display = 'flex';
+          controlBarEl.style.visibility = 'visible';
+          controlBarEl.style.opacity = '1';
+          controlBarEl.style.transform = 'translateY(0px)';
+        }
+      }
+      
+      // Force it again after a short delay
+      setTimeout(() => {
+        const controlBar = player.controlBar;
+        if (controlBar) {
+          controlBar.show();
+          const controlBarEl = controlBar.el();
+          if (controlBarEl) {
+            controlBarEl.style.display = 'flex';
+            controlBarEl.style.visibility = 'visible';
+            controlBarEl.style.opacity = '1';
+            controlBarEl.style.transform = 'translateY(0px)';
+          }
+        }
+      }, 100);
+    });
+
     // handle player events
     // device is ready
     player.on('deviceReady', () => {
       console.log('device is ready!');
+      // Ensure controls are visible
+      player.controls(true);
       // Try to enumerate devices
       try {
         playerRef.current.record().enumerateDevices();

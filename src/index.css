@@ -41,3 +41,27 @@
     -moz-osx-font-smoothing: grayscale;
   }
 }
+
+/* VideoJS Control Bar - Always Visible */
+.video-js .vjs-control-bar {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  transform: translateY(0px) !important;
+  position: absolute !important;
+  bottom: 0 !important;
+}
+
+.video-js.vjs-user-inactive .vjs-control-bar {
+  transform: translateY(0px) !important;
+  opacity: 1 !important;
+}
+
+.video-js.vjs-has-started .vjs-control-bar {
+  transform: translateY(0px) !important;
+  opacity: 1 !important;
+}
+
+.video-js .vjs-big-play-button {
+  display: none !important;
+}
