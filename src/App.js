@@ -160,7 +160,7 @@ function App() {
       {/* Header */}
       <div className="flex-shrink-0 border-b bg-card">
         <div className="container max-w-4xl mx-auto p-6">
-          <h1 className="text-3xl font-bold mb-2">preddle.ai</h1>
+          <h1 className="text-3xl font-bold mb-2">PREDDLE</h1>
           <p className="text-muted-foreground">Ask me anything about using the video recorder or select from the suggestions below.</p>
         </div>
       </div>

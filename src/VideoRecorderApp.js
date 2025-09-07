@@ -73,12 +73,13 @@ function VideoRecorderApp() {
       */
       record: {
         audio: true,
+
         video: {
           width: dimensions.width,
           height: dimensions.height
         },
         pip: true,
-        screen: true,
+        screen: false,
         maxLength: 120,
         debug: true
       }
