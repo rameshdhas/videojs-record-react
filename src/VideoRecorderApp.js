@@ -4,7 +4,7 @@ import React from 'react';
 import VideoJSComponent from './VideoJSComponent';
 import VideoOverlay from './VideoOverlay';
 
-function VideoRecorderApp() {
+function VideoRecorderApp({ onRecordingFinished }) {
   const playerRef = React.useRef(null);
   const [isMirrored, setIsMirrored] = React.useState(true);
   const [videoDevices, setVideoDevices] = React.useState([]);
@@ -205,6 +205,13 @@ function VideoRecorderApp() {
     setShowOverlayEditor(false);
     setRecordedBlob(null);
   };
+
+  // Notify parent when overlay editor shows
+  React.useEffect(() => {
+    if (showOverlayEditor && recordedBlob && onRecordingFinished) {
+      onRecordingFinished();
+    }
+  }, [showOverlayEditor, recordedBlob, onRecordingFinished]);
 
   // If showing overlay editor, render only the overlay component
   if (showOverlayEditor && recordedBlob) {

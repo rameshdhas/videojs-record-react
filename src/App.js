@@ -26,10 +26,34 @@ const mockResponses = {
   "How do I change camera or microphone?": "You can change your camera and microphone using the dropdown menus:\n1. 'Select Video Input' - Choose your camera\n2. 'Select Audio Input' - Choose your microphone\n\nMake sure to grant permission when prompted by your browser. If devices don't appear, try refreshing the page."
 };
 
+// Helper function to detect overlay requests
+const getOverlayResponse = (input) => {
+  const lowerInput = input.toLowerCase();
+  
+  if (lowerInput.includes('intro') || lowerInput.includes('introduction')) {
+    return "Perfect! I'll help you add an intro overlay. You can:\n\n• Add your name and title at the beginning\n• Include your company logo\n• Add a brief description of what the video covers\n• Set the timing for when it appears (e.g., 0-3 seconds)\n\nUse the overlay editor above to drag and position your intro text where you'd like it to appear!";
+  }
+  
+  if (lowerInput.includes('calendly') || lowerInput.includes('calendar') || lowerInput.includes('schedule') || lowerInput.includes('book')) {
+    return "Great idea! Adding a Calendly link at the end will help viewers take action. You can:\n\n• Add text like 'Book a call with me'\n• Include your Calendly URL as a clickable link\n• Position it in the final 5-10 seconds of your video\n• Make it prominent but not overwhelming\n\nUse the overlay editor to add this call-to-action at the end of your video!";
+  }
+  
+  if (lowerInput.includes('thank') || lowerInput.includes('thanks') || lowerInput.includes('thank you')) {
+    return "Excellent choice! A thank you note adds a professional touch. You can:\n\n• Add 'Thank you for watching!' \n• Include your social media handles\n• Add 'Like and subscribe' if for YouTube\n• Position it in the last 3-5 seconds\n\nUse the overlay editor above to create a warm closing message for your viewers!";
+  }
+  
+  if (lowerInput.includes('call to action') || lowerInput.includes('cta') || lowerInput.includes('button')) {
+    return "Smart thinking! Call-to-action overlays boost engagement. You can add:\n\n• 'Visit our website' buttons\n• 'Download our app' links  \n• 'Follow us' social media prompts\n• 'Get started' action buttons\n\nPosition these strategically throughout your video using the overlay editor above!";
+  }
+  
+  return null;
+};
+
 function App() {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasShownOverlayPrompt, setHasShownOverlayPrompt] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -47,6 +71,45 @@ function App() {
 
   const handleInputChange = (e) => {
     setInput(e.target.value);
+  };
+
+  const handleOverlaySuggestionClick = (suggestion) => {
+    const userMessage = { id: Date.now(), role: 'user', content: suggestion };
+    setMessages(prev => [...prev, userMessage]);
+    
+    setIsLoading(true);
+    
+    setTimeout(() => {
+      const overlayResponse = getOverlayResponse(suggestion);
+      const response = overlayResponse || "I can help you with that overlay. Use the overlay editor above to add your content!";
+      
+      const assistantMessage = { 
+        id: Date.now() + 1, 
+        role: 'assistant', 
+        content: response
+      };
+      setMessages(prev => [...prev, assistantMessage]);
+      setIsLoading(false);
+    }, 500);
+  };
+
+  const handleRecordingFinished = () => {
+    // Only show overlay prompt once per recording session
+    if (!hasShownOverlayPrompt) {
+      setHasShownOverlayPrompt(true);
+      setIsLoading(true);
+      
+      setTimeout(() => {
+        const overlayPromptMessage = { 
+          id: Date.now() + 3, 
+          role: 'assistant', 
+          content: "Great recording! 🎥 Would you like to add overlays to make your video more engaging?",
+          hasOverlaySuggestions: true
+        };
+        setMessages(prev => [...prev, overlayPromptMessage]);
+        setIsLoading(false);
+      }, 500);
+    }
   };
 
   const handleSuggestionClick = (suggestion) => {
@@ -140,7 +203,10 @@ function App() {
       
       // Handle other messages normally
       setTimeout(() => {
-        const response = mockResponses[input] || "I can help you with questions about the video recorder. Try clicking one of the suggested questions above, or ask about recording features, device settings, or troubleshooting.";
+        // Check for overlay-related responses first
+        const overlayResponse = getOverlayResponse(input);
+        const response = overlayResponse || mockResponses[input] || "I can help you with questions about the video recorder. Try clicking one of the suggested questions above, or ask about recording features, device settings, or troubleshooting.";
+        
         const assistantMessage = { 
           id: Date.now() + 1, 
           role: 'assistant', 
@@ -190,9 +256,43 @@ function App() {
                 )}
                 <CardContent className={message.isComponent ? 'p-0' : 'pt-0'}>
                   {message.isComponent ? (
-                    <VideoRecorderApp key={message.id} />
+                    <VideoRecorderApp key={message.id} onRecordingFinished={handleRecordingFinished} />
                   ) : (
-                    <div className="whitespace-pre-wrap text-sm">{message.content}</div>
+                    <>
+                      <div className="whitespace-pre-wrap text-sm">{message.content}</div>
+                      {message.hasOverlaySuggestions && (
+                        <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2">
+                          <Button
+                            variant="outline"
+                            className="justify-start h-auto p-3 text-left whitespace-normal text-sm"
+                            onClick={() => handleOverlaySuggestionClick("Add intro")}
+                          >
+                            🎬 Add Intro
+                          </Button>
+                          <Button
+                            variant="outline"
+                            className="justify-start h-auto p-3 text-left whitespace-normal text-sm"
+                            onClick={() => handleOverlaySuggestionClick("Add Calendly at the end")}
+                          >
+                            📅 Add Calendly Link
+                          </Button>
+                          <Button
+                            variant="outline"
+                            className="justify-start h-auto p-3 text-left whitespace-normal text-sm"
+                            onClick={() => handleOverlaySuggestionClick("Add thank you note")}
+                          >
+                            🙏 Thank You Note
+                          </Button>
+                          <Button
+                            variant="outline"
+                            className="justify-start h-auto p-3 text-left whitespace-normal text-sm"
+                            onClick={() => handleOverlaySuggestionClick("Add call to action button")}
+                          >
+                            🔗 Call-to-Action
+                          </Button>
+                        </div>
+                      )}
+                    </>
                   )}
                 </CardContent>
               </Card>
