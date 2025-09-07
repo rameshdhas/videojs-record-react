@@ -200,6 +200,17 @@ function VideoRecorderApp() {
     setRecordedBlob(null);
   };
 
+  // If showing overlay editor, render only the overlay component
+  if (showOverlayEditor && recordedBlob) {
+    return (
+      <VideoOverlay
+        videoBlob={recordedBlob}
+        onClose={handleCloseOverlayEditor}
+        aspectRatio={aspectRatio}
+      />
+    );
+  }
+
   const handlePlayerReady = (player) => {
     playerRef.current = player;
 
@@ -432,15 +443,8 @@ function VideoRecorderApp() {
         </div>
       )}
       
-      {showOverlayEditor && recordedBlob && (
-        <VideoOverlay
-          videoBlob={recordedBlob}
-          onClose={handleCloseOverlayEditor}
-          aspectRatio={aspectRatio}
-        />
-      )}
     </div>
   );
 }
 
-export default VideoRecorderApp;
+export default React.memo(VideoRecorderApp);

@@ -313,18 +313,13 @@ const VideoOverlay = ({ videoBlob, onClose, aspectRatio = '16:9' }) => {
   };
 
   return (
-    <div className="mt-8 p-6 border border-gray-300 rounded-lg bg-gray-50">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-medium text-gray-900">Add Video Overlays</h3>
-        <button
-          onClick={onClose}
-          className="px-3 py-1 text-gray-500 hover:text-gray-700 text-xl"
-        >
-          ✕
-        </button>
-      </div>
+    <div className="p-4 border border-gray-300 rounded-lg bg-gray-50 flex justify-center">
+
       
-      <div className="mb-6">
+      <div>
+         {/*<div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-medium text-gray-900">Add Video Overlays</h3>
+          </div>*/}
         <div data-vjs-player style={{ position: 'relative' }}>
           <div ref={videoRef} />
           

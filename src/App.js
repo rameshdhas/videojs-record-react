@@ -132,7 +132,7 @@ function App() {
                 )}
                 <CardContent className={message.isComponent ? 'p-0' : 'pt-0'}>
                   {message.isComponent ? (
-                    <VideoRecorderApp />
+                    <VideoRecorderApp key={message.id} />
                   ) : (
                     <div className="whitespace-pre-wrap text-sm">{message.content}</div>
                   )}
