@@ -352,8 +352,8 @@ function VideoRecorderApp() {
 
   return (
     <div className="App flex flex-col justify-center items-center bg-gray-50 p-4">
-      <div className="mb-4 flex flex-col gap-4">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-4">
+        {/*<div className="flex items-center gap-3">
           <label className="text-gray-700 font-medium">Select Video Input:</label>
           <select
             value={selectedVideoDeviceId}
@@ -371,9 +371,9 @@ function VideoRecorderApp() {
               ))
             )}
           </select>
-        </div>
+        </div>*/}
 
-        <div className="flex items-center gap-3">
+        {/*<div className="flex items-center gap-3">
           <label className="text-gray-700 font-medium">Select Audio Input:</label>
           <select
             value={selectedAudioDeviceId}
@@ -391,9 +391,9 @@ function VideoRecorderApp() {
               ))
             )}
           </select>
-        </div>
+        </div>*/}
 
-        <div className="flex items-center gap-3">
+        {/*<div className="flex items-center gap-3">
           <label className="text-gray-700 font-medium">Aspect Ratio:</label>
           <select
             value={aspectRatio}
@@ -404,9 +404,9 @@ function VideoRecorderApp() {
             <option value="1:1">1:1 (Square)</option>
             <option value="9:16">9:16 (Portrait/Mobile)</option>
           </select>
-        </div>
+        </div>*/}
         
-        <div className="flex items-center gap-3">
+        {/*<div className="flex items-center gap-3">
           <span className="text-gray-700">Mirror Mode:</span>
           <label className="relative inline-flex items-center cursor-pointer">
             <input
@@ -423,10 +423,10 @@ function VideoRecorderApp() {
               } mt-0.5 ml-0.5`}></div>
             </div>
           </label>
-        </div>
+        </div>*/}
       </div>
       <VideoJSComponent key={aspectRatio} options={videoJsOptions} onReady={handlePlayerReady} />
-      {isRecording && (
+      {/*isRecording && (
         <div className="mt-4 flex gap-3">
           <button
             onClick={toggleMicrophone}
@@ -441,7 +441,7 @@ function VideoRecorderApp() {
             {isCameraStopped ? '📹 Start Camera' : '📹 Stop Camera'}
           </button>
         </div>
-      )}
+      )*/}
       
     </div>
   );
