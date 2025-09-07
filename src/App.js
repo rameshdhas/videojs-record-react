@@ -58,14 +58,42 @@ function App() {
     
     setIsLoading(true);
     
-    // Simulate AI response
+    // Handle video recorder launch with follow-up questions
+    if (suggestion === "Launch video recorder") {
+      // Add video recorder component first
+      setTimeout(() => {
+        const recorderMessage = { 
+          id: Date.now() + 1, 
+          role: 'assistant', 
+          content: "VIDEO_RECORDER_COMPONENT",
+          isComponent: true
+        };
+        setMessages(prev => [...prev, recorderMessage]);
+        setIsLoading(false);
+        
+        // Add follow-up questions immediately with loading state
+        setIsLoading(true);
+        
+        setTimeout(() => {
+          const followUpMessage = { 
+            id: Date.now() + 2, 
+            role: 'assistant', 
+            content: "Great! Your video recorder is ready. Before you start recording, I can help you prepare:\n\n• Do you want me to create a script for this recording?\n• What is this video about?\n• Any specific talking points or topics you'd like to cover?\n\nJust let me know how I can assist with your recording!"
+          };
+          setMessages(prev => [...prev, followUpMessage]);
+          setIsLoading(false);
+        }, 500);
+      }, 1000);
+      return;
+    }
+    
+    // Handle other suggestions normally
     setTimeout(() => {
       const response = mockResponses[suggestion] || "I can help you with questions about the video recorder. Try clicking one of the suggested questions above, or ask about recording features, device settings, or troubleshooting.";
       const assistantMessage = { 
         id: Date.now() + 1, 
         role: 'assistant', 
-        content: response,
-        isComponent: response === "VIDEO_RECORDER_COMPONENT"
+        content: response
       };
       setMessages(prev => [...prev, assistantMessage]);
       setIsLoading(false);
@@ -80,7 +108,37 @@ function App() {
       
       setIsLoading(true);
       
-      // Simulate AI response
+      // Check if user is asking for video recorder launch
+      if (input.toLowerCase().includes("launch") && input.toLowerCase().includes("video")) {
+        // Add video recorder component first
+        setTimeout(() => {
+          const recorderMessage = { 
+            id: Date.now() + 1, 
+            role: 'assistant', 
+            content: "VIDEO_RECORDER_COMPONENT",
+            isComponent: true
+          };
+          setMessages(prev => [...prev, recorderMessage]);
+          setIsLoading(false);
+          
+          // Add follow-up questions immediately with loading state
+          setIsLoading(true);
+          
+          setTimeout(() => {
+            const followUpMessage = { 
+              id: Date.now() + 2, 
+              role: 'assistant', 
+              content: "Great! Your video recorder is ready. Before you start recording, I can help you prepare:\n\n• Do you want me to create a script for this recording?\n• What is this video about?\n• Any specific talking points or topics you'd like to cover?\n\nJust let me know how I can assist with your recording!"
+            };
+            setMessages(prev => [...prev, followUpMessage]);
+            setIsLoading(false);
+          }, 500);
+        }, 1000);
+        setInput('');
+        return;
+      }
+      
+      // Handle other messages normally
       setTimeout(() => {
         const response = mockResponses[input] || "I can help you with questions about the video recorder. Try clicking one of the suggested questions above, or ask about recording features, device settings, or troubleshooting.";
         const assistantMessage = { 
@@ -102,7 +160,7 @@ function App() {
       {/* Header */}
       <div className="flex-shrink-0 border-b bg-card">
         <div className="container max-w-4xl mx-auto p-6">
-          <h1 className="text-3xl font-bold mb-2">Video Recorder Assistant</h1>
+          <h1 className="text-3xl font-bold mb-2">preddle.ai</h1>
           <p className="text-muted-foreground">Ask me anything about using the video recorder or select from the suggestions below.</p>
         </div>
       </div>

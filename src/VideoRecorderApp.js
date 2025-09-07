@@ -36,7 +36,12 @@ function VideoRecorderApp() {
   
   const videoJsOptions = React.useMemo(() => ({
     controls: true,
-    bigPlayButton: true,
+    bigPlayButton: false,
+    controlBar: {
+      volumePanel: {
+        inline: false
+      }
+    },
     width: dimensions.width,
     height: dimensions.height,
     fluid: false,

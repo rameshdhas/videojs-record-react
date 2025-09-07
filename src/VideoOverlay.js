@@ -54,6 +54,7 @@ const VideoOverlay = ({ videoBlob, onClose, aspectRatio = '16:9' }) => {
 
       const player = playerRef.current = videojs(videoElement, {
         controls: true,
+        bigPlayButton: false,
         responsive: true,
         fluid: false,
         width: dimensions.width,
