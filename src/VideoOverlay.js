@@ -234,7 +234,7 @@ const VideoOverlay = ({ videoBlob, onClose, aspectRatio = '16:9' }) => {
       textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
       cursor: 'move',
       userSelect: 'none',
-      backgroundColor: 'rgba(0,0,0,0.5)',
+      backgroundColor: 'rgba(200,100,100,0.5)',
       padding: '10px',
       borderRadius: '8px',
       animation: 'zoomIn 0.8s ease-out',
@@ -296,6 +296,18 @@ const VideoOverlay = ({ videoBlob, onClose, aspectRatio = '16:9' }) => {
         >
           Action
         </button>
+        <div style={{ marginTop: '10px' }}>
+          <img
+            src="https://cliply.co/wp-content/uploads/2021/07/452105030_HEART_DOODLES_400.gif"
+            alt="Sample overlay"
+            style={{
+              display: 'block',
+              borderRadius: '4px',
+              maxWidth: '150px',
+              height: 'auto'
+            }}
+          />
+        </div>
       </div>
     );
   };
