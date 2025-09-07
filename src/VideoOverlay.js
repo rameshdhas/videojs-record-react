@@ -314,15 +314,15 @@ const VideoOverlay = ({ videoBlob, onClose, aspectRatio = '16:9' }) => {
   };
 
   return (
-    <div className="p-4 flex justify-center">
+    <div className="p-4 flex justify-center bg-gray-50">
 
       
       <div>
-         <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium text-gray-900">Add Video Overlays</h3>
+         <div className="flex justify-between items-center mb-2">
+            <p className="text-sm font-medium text-gray-900">Edit Video</p>
             <button
                       onClick={onClose}
-                      className="px-3 py-1 text-gray-500 hover:text-gray-700 text-xl"
+                      className="px-3 py-1 text-gray-500 hover:text-gray-700 text-md"
                     >
                       ✕
                     </button>
