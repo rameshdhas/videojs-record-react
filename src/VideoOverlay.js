@@ -313,7 +313,7 @@ const VideoOverlay = ({ videoBlob, onClose, aspectRatio = '16:9' }) => {
   };
 
   return (
-    <div className="p-4 border border-gray-300 rounded-lg bg-gray-50 flex justify-center">
+    <div className="p-4 flex justify-center">
 
       
       <div>
