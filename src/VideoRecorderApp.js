@@ -340,7 +340,7 @@ function VideoRecorderApp() {
   };
 
   return (
-    <div className="App flex flex-col justify-center items-center mt-20">
+    <div className="App flex flex-col justify-center items-center bg-gray-50 p-4">
       <div className="mb-4 flex flex-col gap-4">
         <div className="flex items-center gap-3">
           <label className="text-gray-700 font-medium">Select Video Input:</label>
