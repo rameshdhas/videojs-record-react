@@ -6,6 +6,7 @@ import VideoRecorderApp from './VideoRecorderApp';
 import { Button } from './components/ui/button';
 import { Input } from './components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './components/ui/card';
+import { callOpenAI } from './api/chat';
 
 const suggestions = [
   "Launch video recorder",
@@ -54,8 +55,51 @@ function App() {
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasShownOverlayPrompt, setHasShownOverlayPrompt] = useState(false);
+  const [apiKey, setApiKey] = useState(process.env.REACT_APP_OPENAI_API_KEY || '');
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+
+  const getAIResponse = async (userMessage) => {
+    console.log('Getting AI response for:', userMessage);
+    console.log('API Key available:', apiKey ? 'Yes' : 'No');
+    console.log('API Key starts with sk-:', apiKey?.startsWith('sk-'));
+
+    // First check for video recorder launch (always prioritize this)
+    if (userMessage.toLowerCase().includes("launch") && userMessage.toLowerCase().includes("video")) {
+      return "VIDEO_RECORDER_COMPONENT";
+    }
+
+    // If we have an API key, use OpenAI for most responses
+    if (apiKey && apiKey !== 'your_openai_api_key_here' && apiKey.length > 10) {
+      try {
+        console.log('Calling OpenAI API...');
+        const response = await callOpenAI(userMessage, apiKey);
+        console.log('OpenAI Response:', response);
+        return response;
+      } catch (error) {
+        console.error('OpenAI Error:', error);
+        // Fall through to backup responses on API error
+      }
+    }
+
+    // Fallback to predefined responses if no API key or API fails
+    console.log('Using fallback responses');
+    
+    // Check for overlay-related responses
+    const overlayResponse = getOverlayResponse(userMessage);
+    if (overlayResponse) {
+      return overlayResponse;
+    }
+
+    // Check for specific video recorder questions
+    const mockResponse = mockResponses[userMessage];
+    if (mockResponse) {
+      return mockResponse;
+    }
+
+    // Final fallback
+    return "I can help you with questions about the video recorder. Try clicking one of the suggested questions above, or ask about recording features, device settings, or troubleshooting. (Add OpenAI API key for AI responses)";
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -73,24 +117,31 @@ function App() {
     setInput(e.target.value);
   };
 
-  const handleOverlaySuggestionClick = (suggestion) => {
+  const handleOverlaySuggestionClick = async (suggestion) => {
     const userMessage = { id: Date.now(), role: 'user', content: suggestion };
     setMessages(prev => [...prev, userMessage]);
     
     setIsLoading(true);
     
-    setTimeout(() => {
-      const overlayResponse = getOverlayResponse(suggestion);
-      const response = overlayResponse || "I can help you with that overlay. Use the overlay editor above to add your content!";
-      
+    try {
+      const response = await getAIResponse(suggestion);
       const assistantMessage = { 
         id: Date.now() + 1, 
         role: 'assistant', 
-        content: response
+        content: response,
+        isComponent: response === "VIDEO_RECORDER_COMPONENT"
       };
       setMessages(prev => [...prev, assistantMessage]);
-      setIsLoading(false);
-    }, 500);
+    } catch (error) {
+      const errorMessage = { 
+        id: Date.now() + 1, 
+        role: 'assistant', 
+        content: "Sorry, I encountered an error. Please try again."
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    }
+    
+    setIsLoading(false);
   };
 
   const handleRecordingFinished = () => {
@@ -112,7 +163,7 @@ function App() {
     }
   };
 
-  const handleSuggestionClick = (suggestion) => {
+  const handleSuggestionClick = async (suggestion) => {
     // Skip user message for video recorder launch
     if (suggestion !== "Launch video recorder") {
       const userMessage = { id: Date.now(), role: 'user', content: suggestion };
@@ -150,20 +201,29 @@ function App() {
       return;
     }
     
-    // Handle other suggestions normally
-    setTimeout(() => {
-      const response = mockResponses[suggestion] || "I can help you with questions about the video recorder. Try clicking one of the suggested questions above, or ask about recording features, device settings, or troubleshooting.";
+    // Handle other suggestions with AI
+    try {
+      const response = await getAIResponse(suggestion);
       const assistantMessage = { 
         id: Date.now() + 1, 
         role: 'assistant', 
-        content: response
+        content: response,
+        isComponent: response === "VIDEO_RECORDER_COMPONENT"
       };
       setMessages(prev => [...prev, assistantMessage]);
-      setIsLoading(false);
-    }, 1000);
+    } catch (error) {
+      const errorMessage = { 
+        id: Date.now() + 1, 
+        role: 'assistant', 
+        content: "Sorry, I encountered an error. Please try again."
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    }
+    
+    setIsLoading(false);
   };
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
     if (input.trim()) {
       const userMessage = { id: Date.now(), role: 'user', content: input };
@@ -201,12 +261,9 @@ function App() {
         return;
       }
       
-      // Handle other messages normally
-      setTimeout(() => {
-        // Check for overlay-related responses first
-        const overlayResponse = getOverlayResponse(input);
-        const response = overlayResponse || mockResponses[input] || "I can help you with questions about the video recorder. Try clicking one of the suggested questions above, or ask about recording features, device settings, or troubleshooting.";
-        
+      // Handle other messages with AI
+      try {
+        const response = await getAIResponse(input);
         const assistantMessage = { 
           id: Date.now() + 1, 
           role: 'assistant', 
@@ -214,9 +271,16 @@ function App() {
           isComponent: response === "VIDEO_RECORDER_COMPONENT"
         };
         setMessages(prev => [...prev, assistantMessage]);
-        setIsLoading(false);
-      }, 1000);
+      } catch (error) {
+        const errorMessage = { 
+          id: Date.now() + 1, 
+          role: 'assistant', 
+          content: "Sorry, I encountered an error. Please try again."
+        };
+        setMessages(prev => [...prev, errorMessage]);
+      }
       
+      setIsLoading(false);
       setInput('');
     }
   };
@@ -226,8 +290,26 @@ function App() {
       {/* Header */}
       <div className="flex-shrink-0 border-b bg-card">
         <div className="container max-w-4xl mx-auto p-6">
-          <h1 className="text-3xl font-bold mb-2">PREDDLE</h1>
-          <p className="text-muted-foreground">Ask me anything about using the video recorder or select from the suggestions below.</p>
+          <div className="flex justify-between items-center mb-2">
+            <h1 className="text-3xl font-bold">PREDDLE</h1>
+            {(!apiKey || apiKey === 'your_openai_api_key_here') && (
+              <div className="flex items-center gap-2">
+                <Input
+                  type="password"
+                  placeholder="Enter OpenAI API key for AI responses"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  className="w-64"
+                />
+              </div>
+            )}
+          </div>
+          <p className="text-muted-foreground">
+            Ask me anything about using the video recorder or select from the suggestions below.
+            {apiKey && apiKey !== 'your_openai_api_key_here' && (
+              <span className="text-green-600 ml-1">✓ AI responses enabled</span>
+            )}
+          </p>
         </div>
       </div>
 
